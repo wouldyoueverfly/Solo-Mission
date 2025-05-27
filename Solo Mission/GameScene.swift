@@ -8,12 +8,31 @@
 import SpriteKit
 import GameplayKit
 
+var gameScore = 0
+
 class GameScene: SKScene {
+    
+    let tapToStartLabel = SKLabelNode(fontNamed: "The Bold Font")
+    
+    let scoreLabel = SKLabelNode(fontNamed: "The Bold Font")
+    
+    var livesNumber = 3
+    let livesLabel = SKLabelNode(fontNamed: "The Bold Font")
+    
+    var levelNumber = 0
     
     let player = SKSpriteNode(imageNamed: "playerShip")
     
     let bulletSound = SKAction.playSoundFileNamed("bulletSoundEffect", waitForCompletion: false)
     let explosionSound = SKAction.playSoundFileNamed("explosionSoundEffect", waitForCompletion: false)
+    
+    enum gameState {
+        case preGame
+        case inGame
+        case afterGame
+    }
+    
+    var currentGameState = gameState.inGame
     
     struct PhysicsCategories {
         static let None: UInt32 = 0
@@ -47,6 +66,8 @@ class GameScene: SKScene {
     
     override func didMove(to view: SKView) {
         
+        gameScore = 0
+        
         self.physicsWorld.contactDelegate = self
         
         let background = SKSpriteNode(imageNamed: "background")
@@ -58,7 +79,7 @@ class GameScene: SKScene {
         self.addChild(background)
         
         player.setScale(1)
-        player.position = CGPoint(x: self.size.width/2, y: self.size.height * 0.2)
+        player.position = CGPoint(x: self.size.width/2, y: 0 - player.size.height)
         player.zPosition = 2
         
         player.physicsBody = SKPhysicsBody(rectangleOf: player.size)
@@ -69,10 +90,90 @@ class GameScene: SKScene {
         
         self.addChild(player)
         
+        scoreLabel.text = "Score: 0"
+        scoreLabel.fontSize = 70
+        scoreLabel.fontColor = .white
+        scoreLabel.horizontalAlignmentMode = .left
+        scoreLabel.position = CGPoint(x: self.size.width * 0.22, y: self.size.height * 0.9)
+        scoreLabel.zPosition = 100
+        
+        self.addChild(scoreLabel)
+        
+        livesLabel.text = "Lives: 3"
+        livesLabel.fontSize = 70
+        livesLabel.fontColor = .white
+        livesLabel.horizontalAlignmentMode = .right
+        livesLabel.position = CGPoint(x: self.size.width * 0.78, y: self.size.height * 0.9)
+        livesLabel.zPosition = 100
+        
+        self.addChild(livesLabel)
+        
+//        tapToStartLabel.text = "Tap to start"
+//        tapToStartLabel.fontSize = 100
+//        tapToStartLabel.fontColor = .white
+//        tapToStartLabel.zPosition = 1
+//        tapToStartLabel.position = CGPoint(x: self.size.width * 0.5, y: self.size.width * 0.5)
+//        self.addChild(tapToStartLabel)
+        
         let waitToStartLevel = SKAction.wait(forDuration: 1.5)
         let startLevel = SKAction.run(startNewLevel)
         let startLevelSequence = SKAction.sequence([waitToStartLevel, startLevel])
         self.run(startLevelSequence)
+        
+    }
+    
+    func loseALife() {
+        
+        livesNumber -= 1
+        livesLabel.text = "Lives: \(livesNumber)"
+        
+        let scaleUp = SKAction.scale(to: 1.5, duration: 0.2)
+        let scaleDown = SKAction.scale(to: 1, duration: 0.2)
+        let scaleSequence = SKAction.sequence([scaleUp, scaleDown])
+        livesLabel.run(scaleSequence)
+        
+        if livesNumber == 0 {
+            runGameOver()
+        }
+        
+    }
+    
+    func addScore() {
+        gameScore += 1
+        scoreLabel.text = "Score: \(gameScore)"
+        
+        if gameScore == 10 || gameScore == 25 || gameScore == 50 {
+            startNewLevel()
+        }
+    }
+    
+    func changeScene() {
+        
+        let sceneToMoveTo = GameOverScene(size: self.size)
+        sceneToMoveTo.scaleMode = self.scaleMode
+        let transition = SKTransition.fade(withDuration: 0.5)
+        self.view!.presentScene(sceneToMoveTo, transition: transition)
+        
+    }
+    
+    func runGameOver() {
+        
+        currentGameState = .afterGame
+        
+        self.removeAllActions()
+        
+        self.enumerateChildNodes(withName: "Bullet") { bullet, stop in
+            bullet.removeAllActions()
+        }
+        
+        self.enumerateChildNodes(withName: "Enemy") { enemy, stop in
+            enemy.removeAllActions()
+        }
+        
+        let changeSceneAction = SKAction.run(changeScene)
+        let waitToChangeScene = SKAction.wait(forDuration: 1)
+        let changeSceneSequence = SKAction.sequence([waitToChangeScene, changeSceneAction])
+        self.run(changeSceneSequence)
     }
     
     func spawnExplosion(spawnPosition: CGPoint) {
@@ -93,17 +194,41 @@ class GameScene: SKScene {
     }
     
     func startNewLevel() {
+        
+        levelNumber += 1
+        
+        if self.action(forKey: "spawningEnemies") != nil {
+            self.removeAction(forKey: "spawningEnemies")
+        }
+        
+        var levelDuration = TimeInterval()
+        
+        switch levelNumber {
+        case 1:
+            levelDuration = 1.2
+        case 2:
+            levelDuration = 1
+        case 3:
+            levelDuration = 0.8
+        case 4:
+            levelDuration = 0.6
+        default:
+            levelDuration = 0.6
+            print("Cannot find level info")
+        }
+        
         let spawn = SKAction.run(spawnEnemy)
-        let waitToSpawn = SKAction.wait(forDuration: 1)
+        let waitToSpawn = SKAction.wait(forDuration: levelDuration)
         let spawnSequence = SKAction.sequence([spawn,waitToSpawn])
         let spawnForever = SKAction.repeatForever(spawnSequence)
-        self.run(spawnForever)
+        
+        self.run(spawnForever, withKey: "spawningEnemies")
     }
     
     func fireBullet() {
         
         let bullet = SKSpriteNode(imageNamed: "bullet")
-        
+        bullet.name = "Bullet"
         bullet.setScale(1)
         bullet.position = player.position
         bullet.zPosition = 1
@@ -135,6 +260,7 @@ class GameScene: SKScene {
         let amountToRotate = atan2(dy, dx)
         
         let enemy = SKSpriteNode(imageNamed: "enemyShip")
+        enemy.name = "Enemy"
         enemy.setScale(1)
         enemy.position = startPoint
         enemy.zRotation = amountToRotate
@@ -149,14 +275,22 @@ class GameScene: SKScene {
         self.addChild(enemy)
         
         let moveEnemy = SKAction.move(to: endPoint, duration: 1.5)
+        let loseALifeAction = SKAction.run(loseALife)
         let deleteEnemy = SKAction.removeFromParent()
-        let enemySequence = SKAction.sequence([moveEnemy, deleteEnemy])
-        enemy.run(enemySequence)
+        let enemySequence = SKAction.sequence([moveEnemy, deleteEnemy, loseALifeAction])
+        
+        if currentGameState == .inGame {
+            enemy.run(enemySequence)
+        }
         
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        fireBullet()
+        
+        if currentGameState == .inGame {
+            fireBullet()
+        }
+    
     }
     
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -169,7 +303,9 @@ class GameScene: SKScene {
 
             let amountDragged = pointOfTouch.x - previousPointOfTouch.x
             
-            player.position.x += amountDragged
+            if currentGameState == .inGame {
+                player.position.x += amountDragged
+            }
             
             if player.position.x > CGRectGetMaxX(gameArea) - player.size.width/2 {
                 player.position.x = CGRectGetMaxX(gameArea) - player.size.width/2
@@ -208,9 +344,13 @@ extension GameScene: SKPhysicsContactDelegate {
             body1.node?.removeFromParent()
             body2.node?.removeFromParent()
             
+            runGameOver()
+            
         }
         
         if body1.categoryBitMask == PhysicsCategories.Bullet && body2.categoryBitMask == PhysicsCategories.Enemy && body2.node?.position.y ?? self.size.height < self.size.height {
+            
+            addScore()
             
             if let enemy = body2.node {
                 spawnExplosion(spawnPosition: enemy.position)

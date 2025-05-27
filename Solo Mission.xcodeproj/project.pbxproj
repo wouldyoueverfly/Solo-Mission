@@ -36,6 +36,7 @@
 				EEC993AB2DE3ED700017EF99 /* Products */,
 			);
 			sourceTree = "<group>";
+			usesTabs = 0;
 		};
 		EEC993AB2DE3ED700017EF99 /* Products */ = {
 			isa = PBXGroup;
@@ -255,6 +256,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BN798H9JF7;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Solo-Mission-Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -288,6 +290,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BN798H9JF7;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Solo-Mission-Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
