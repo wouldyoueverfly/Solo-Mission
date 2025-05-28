@@ -57,6 +57,8 @@ class GameOverScene: SKScene {
         restartLabel.zPosition = 1
         restartLabel.position = CGPoint(x: self.size.width * 0.5, y: self.size.height * 0.15)
         self.addChild(restartLabel)
+        
+        animateLabel(label: restartLabel)
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
