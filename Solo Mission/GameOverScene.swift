@@ -21,7 +21,7 @@ class GameOverScene: SKScene {
         
         let gameOverLabel = SKLabelNode(fontNamed: "The Bold Font")
         gameOverLabel.text = "Game Over"
-        gameOverLabel.fontSize = 165
+        gameOverLabel.fontSize = 155
         gameOverLabel.fontColor = .white
         gameOverLabel.position = CGPoint(x: self.size.width * 0.5, y: self.size.height * 0.7)
         gameOverLabel.zPosition = 1
@@ -48,14 +48,14 @@ class GameOverScene: SKScene {
         highScoreLabel.fontSize = 110
         highScoreLabel.fontColor = .white
         highScoreLabel.zPosition = 1
-        highScoreLabel.position = CGPoint(x: self.size.width * 0.5, y: self.size.width * 0.5)
+        highScoreLabel.position = CGPoint(x: self.size.width * 0.5, y: self.size.height * 0.5)
         self.addChild(highScoreLabel)
         
         restartLabel.text = "Restart"
         restartLabel.fontSize = 85
         restartLabel.fontColor = .white
         restartLabel.zPosition = 1
-        restartLabel.position = CGPoint(x: self.size.width * 0.5, y: self.size.height * 0.15)
+        restartLabel.position = CGPoint(x: self.size.width * 0.5, y: self.size.height * 0.25)
         self.addChild(restartLabel)
         
         animateLabel(label: restartLabel)
