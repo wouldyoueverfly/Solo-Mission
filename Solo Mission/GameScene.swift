@@ -255,15 +255,15 @@ class GameScene: SKScene {
         
         switch levelNumber {
         case 1:
-            levelDuration = 1.2
+            levelDuration = 1.5
         case 2:
-            levelDuration = 1
+            levelDuration = 1.2
         case 3:
-            levelDuration = 0.8
+            levelDuration = 1
         case 4:
-            levelDuration = 0.6
+            levelDuration = 0.8
         default:
-            levelDuration = 0.6
+            levelDuration = 0.8
             print("Cannot find level info")
         }
         
